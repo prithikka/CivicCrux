@@ -69,6 +69,7 @@ const loginOfficer = async (req, res) => {
         if (user && (user.role === 'officer' || user.role === 'admin') && (await user.matchPassword(password))) {
             res.json({
                 _id: user._id,
+                name: user.name,
                 username: user.username,
                 email: user.email,
                 role: user.role,
@@ -90,6 +91,7 @@ const getMe = async (req, res) => {
         if (user) {
             res.json({
                 _id: user._id,
+                name: user.name,
                 username: user.username,
                 email: user.email,
                 role: user.role,
