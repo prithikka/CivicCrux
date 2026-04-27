@@ -10,6 +10,8 @@ import CitizenLogin from './pages/CitizenLogin';
 import CitizenSignup from './pages/CitizenSignup';
 import OfficerLogin from './pages/OfficerLogin';
 
+import CitizenForgot from './pages/CitizenForgot';
+
 function App() {
   return (
     <Router>
@@ -18,6 +20,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/citizen-login" element={<CitizenLogin />} />
           <Route path="/citizen-signup" element={<CitizenSignup />} />
+          <Route path="/citizen-forgot" element={<CitizenForgot />} />
           <Route path="/officer-login" element={<OfficerLogin />} />
           <Route path="/citizen" element={<CitizenDashboard />} />
           <Route path="/officer" element={<OfficerDashboard />} />

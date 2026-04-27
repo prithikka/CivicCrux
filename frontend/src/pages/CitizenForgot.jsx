@@ -1,61 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 export default function CitizenForgot() {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
+    const [identifier, setIdentifier] = useState('');
+    const [dob, setDob] = useState('');
+    const [resetToken, setResetToken] = useState('');
     const [newPassword, setNewPassword] = useState('');
-    const [confirmationResult, setConfirmationResult] = useState(null);
+    const [confirmPassword, setConfirmPassword] = useState('');
+    
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    useEffect(() => {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible'
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const res = await fetch('http://localhost:5000/api/auth/forgot-password/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier, dob })
             });
-        }
-    }, []);
-
-    const handleSendOtp = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            const appVerifier = window.recaptchaVerifier;
-            const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
-            const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-            setConfirmationResult(confirmation);
-            setStep(2);
+            const data = await res.json();
+            if (res.ok) {
+                setResetToken(data.resetToken);
+                setStep(2);
+            } else {
+                setError(data.message || 'Details do not match');
+            }
         } catch (err) {
-            setError('Failed to send OTP. Try again.');
-            console.error(err);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            await confirmationResult.confirm(otp);
-            setStep(3);
-        } catch (err) {
-            setError('Invalid OTP code.');
+            setError('Server error.');
         }
     };
 
     const handleReset = async (e) => {
         e.preventDefault();
         setError('');
+        
+        if (newPassword !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         try {
-            const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
-            const res = await fetch('http://localhost:5000/api/auth/citizen-reset-password', {
+            const res = await fetch('http://localhost:5000/api/auth/forgot-password/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: formattedPhone, newPassword })
+                body: JSON.stringify({ identifier, resetToken, newPassword })
             });
             const data = await res.json();
             if (res.ok) {
@@ -76,28 +68,30 @@ export default function CitizenForgot() {
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 {success && <p className="text-green-500 mb-4 font-bold">{success}</p>}
 
-                <div id="recaptcha-container"></div>
-
                 {step === 1 && (
-                    <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-                        <p className="text-sm text-gray-600 mb-2">Enter phone number to receive reset OTP</p>
-                        <input type="tel" placeholder="Phone Number" className="input" value={phone} onChange={e => setPhone(e.target.value)} required />
-                        <button type="submit" className="btn btn-primary w-full">Send OTP</button>
+                    <form onSubmit={handleVerify} className="flex flex-col gap-4 text-left">
+                        <p className="text-sm text-gray-600 mb-2">Please enter your registered email/phone and Date of Birth.</p>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Email or Phone</label>
+                            <input type="text" className="input w-full" value={identifier} onChange={e => setIdentifier(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Date of Birth</label>
+                            <input type="text" placeholder="DD/MM/YYYY" className="input w-full" value={dob} onChange={e => setDob(e.target.value)} required />
+                        </div>
+                        <button type="submit" className="btn btn-primary w-full mt-2">Verify</button>
                     </form>
                 )}
 
                 {step === 2 && (
-                    <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
-                        <input type="text" placeholder="6-digit OTP" className="input" value={otp} onChange={e => setOtp(e.target.value)} required />
-                        <button type="submit" className="btn btn-primary w-full">Verify OTP</button>
-                    </form>
-                )}
-
-                {step === 3 && (
                     <form onSubmit={handleReset} className="flex flex-col gap-4 text-left">
                         <div>
                             <label className="block text-sm font-medium mb-1">New Password</label>
                             <input type="password" className="input w-full" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength="6" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                            <input type="password" className="input w-full" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength="6" />
                         </div>
                         <button type="submit" className="btn btn-primary w-full mt-2">Reset Password</button>
                     </form>

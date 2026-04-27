@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 export default function CitizenSignup() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+    const [formData, setFormData] = useState({ username: '', email: '', phone: '', dob: '', password: '', confirmPassword: '' });
     const [error, setError] = useState('');
 
     const handleSignup = async (e) => {
@@ -22,6 +22,8 @@ export default function CitizenSignup() {
                 body: JSON.stringify({
                     username: formData.username,
                     email: formData.email,
+                    phone: formData.phone,
+                    dob: formData.dob,
                     password: formData.password
                 })
             });
@@ -53,6 +55,14 @@ export default function CitizenSignup() {
                     <div>
                         <label className="block text-sm font-medium mb-1">Email</label>
                         <input type="email" className="input w-full" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Phone Number</label>
+                        <input type="tel" className="input w-full" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Date of Birth</label>
+                        <input type="text" placeholder="DD/MM/YYYY" className="input w-full" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} required />
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Password</label>

@@ -48,6 +48,9 @@ export default function CitizenLogin() {
 
                 <div className="mt-6 flex flex-col gap-2 text-sm text-gray-600">
                     <p>
+                        <Link to="/citizen-forgot" className="text-primary hover:underline">Forgot Password?</Link>
+                    </p>
+                    <p>
                         Don't have an account? <Link to="/citizen-signup" className="text-primary hover:underline">Sign up</Link>
                     </p>
                 </div>
