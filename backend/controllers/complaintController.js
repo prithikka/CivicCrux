@@ -6,7 +6,13 @@ const createComplaint = async (req, res) => {
         const complaint = new Complaint({
             title, description, category, ward, location,
             gpsCoordinates: (lat && lng) ? { lat, lng } : null,
-            imageUrl, reportedBy: req.user._id, status: 'REPORTED'
+            imageUrl, reportedBy: req.user._id, status: 'REPORTED',
+            history: [{
+                status: 'REPORTED',
+                note: 'Complaint registered successfully',
+                changedByRole: req.user.role || 'citizen',
+                changedBy: req.user._id
+            }]
         });
         const createdComplaint = await complaint.save();
         res.status(201).json(createdComplaint);
@@ -31,7 +37,8 @@ const getComplaintById = async (req, res) => {
     try {
         const complaint = await Complaint.findById(req.params.id)
             .populate('reportedBy', 'name email')
-            .populate('assignedTo', 'name');
+            .populate('assignedTo', 'name')
+            .populate('history.changedBy', 'name');
 
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
@@ -52,7 +59,15 @@ const updateComplaintStatus = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
         }
 
-        if (status) complaint.status = status;
+        if (status && complaint.status !== status) {
+            complaint.status = status;
+            complaint.history.push({
+                status: status,
+                note: officerRemarks || `Status updated to ${status}`,
+                changedByRole: req.user.role,
+                changedBy: req.user._id
+            });
+        }
         if (resolutionImageUrl) complaint.resolutionImageUrl = resolutionImageUrl;
         if (officerRemarks !== undefined) complaint.officerRemarks = officerRemarks;
 
@@ -72,4 +87,34 @@ const getAllComplaints = async (req, res) => {
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
-module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints };
+const raiseComplaint = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const complaint = await Complaint.findById(req.params.id);
+
+        if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
+
+        if (req.user.role !== 'citizen' || complaint.reportedBy.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to raise a follow-up for this complaint' });
+        }
+
+        if (complaint.status !== 'RESOLVED') {
+            return res.status(400).json({ message: 'Can only raise follow-up on resolved complaints' });
+        }
+
+        complaint.status = 'REOPENED';
+        complaint.history.push({
+            status: 'REOPENED',
+            note: reason || 'Citizen is not satisfied with the resolution',
+            changedByRole: 'citizen',
+            changedBy: req.user._id
+        });
+
+        const updatedComplaint = await complaint.save();
+        res.json(updatedComplaint);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint };

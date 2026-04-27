@@ -14,13 +14,20 @@ const complaintSchema = mongoose.Schema(
         imageUrl: { type: String },
         status: {
             type: String,
-            enum: ['REPORTED', 'IN PROGRESS', 'RESOLVED', 'ESCALATED'],
+            enum: ['REPORTED', 'IN PROGRESS', 'RESOLVED', 'ESCALATED', 'REOPENED'],
             default: 'REPORTED'
         },
         reportedBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
         assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         resolutionImageUrl: { type: String },
         officerRemarks: { type: String },
+        history: [{
+            status: { type: String },
+            note: { type: String },
+            changedByRole: { type: String },
+            changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            timestamp: { type: Date, default: Date.now }
+        }]
     },
     { timestamps: true }
 );

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints } = require('../controllers/complaintController');
+const { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint } = require('../controllers/complaintController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.post('/', protect, createComplaint);
@@ -9,5 +9,6 @@ router.get('/my', protect, getMyComplaints);
 router.get('/officer', protect, authorize('officer', 'admin'), getOfficerComplaints);
 router.get('/:id', protect, getComplaintById);
 router.put('/:id/status', protect, authorize('officer', 'admin'), updateComplaintStatus);
+router.put('/:id/raise', protect, authorize('citizen'), raiseComplaint);
 
 module.exports = router;
