@@ -21,14 +21,14 @@ const createComplaint = async (req, res) => {
 
 const getMyComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find({ reportedBy: req.user._id }).populate('assignedTo', 'name');
+        const complaints = await Complaint.find({ reportedBy: req.user._id }).populate('assignedTo', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
 const getOfficerComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name');
+        const complaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -36,9 +36,9 @@ const getOfficerComplaints = async (req, res) => {
 const getComplaintById = async (req, res) => {
     try {
         const complaint = await Complaint.findById(req.params.id)
-            .populate('reportedBy', 'name email')
-            .populate('assignedTo', 'name')
-            .populate('history.changedBy', 'name');
+            .populate('reportedBy', 'name username email')
+            .populate('assignedTo', 'name username')
+            .populate('history.changedBy', 'name username');
 
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
@@ -82,7 +82,7 @@ const updateComplaintStatus = async (req, res) => {
 
 const getAllComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find().populate('reportedBy', 'name email').populate('assignedTo', 'name');
+        const complaints = await Complaint.find().populate('reportedBy', 'name username email').populate('assignedTo', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
 };

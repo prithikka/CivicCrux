@@ -111,7 +111,7 @@ export default function IssueDetails() {
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <Header
                 title={issue.title}
-                user={user ? user.name : "..."}
+                user={user ? (user.name || user.username) : "..."}
                 extraAction={<button onClick={() => navigate(-1)} className="btn btn-outline" style={{ padding: '0.4rem 1rem' }}>← Back</button>}
             />
             <div className="text-xs text-gray" style={{ marginLeft: '2rem', marginTop: '-1.5rem', marginBottom: '2rem' }}>CivicCrux - Issue ID: {issue._id}</div>
@@ -190,11 +190,11 @@ export default function IssueDetails() {
                             </div>
                             <div>
                                 <p className="text-xs text-gray mb-1">👤 Reported By</p>
-                                <p className="text-sm font-bold">{issue.reportedBy?.name}</p>
+                                <p className="text-sm font-bold">{issue.reportedBy?.name || issue.reportedBy?.username || 'Citizen'}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-gray mb-1">👤 Assigned Officer</p>
-                                <p className="text-sm font-bold">{issue.assignedTo?.name || 'Unassigned'}</p>
+                                <p className="text-sm font-bold">{issue.assignedTo?.name || issue.assignedTo?.username || 'Unassigned'}</p>
                             </div>
                         </div>
                     </div>

@@ -51,7 +51,7 @@ export default function IssueCard({ issue, isOfficer }) {
                         <Link to={`/issue/${issue.id}`} className="text-lg font-bold" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>{issue.title}</Link>
 
                         <span className={`badge ${getBadgeClass(issue.status)}`}>
-                            {issue.status.toUpperCase() === 'RESOLVED' && '✔ '}{issue.status.toUpperCase() === 'REPORTED' && '! '} {getDisplayStatus(issue.status)}
+                            {issue.status?.toUpperCase() === 'RESOLVED' && '✔ '}{issue.status?.toUpperCase() === 'REPORTED' && '! '} {getDisplayStatus(issue.status || 'REPORTED')}
                         </span>
                     </div>
                     <p className="text-xs text-gray" style={{ marginBottom: '0.75rem' }}>{issue.category} • {issue.ward} • {issue.location}</p>
@@ -59,10 +59,10 @@ export default function IssueCard({ issue, isOfficer }) {
                 </div>
 
                 <div className="text-xs flex gap-2 items-center" style={{ flexWrap: 'wrap', color: 'var(--text-secondary)' }}>
-                    <span>Reported by: {issue.reportedBy?.name || issue.reportedBy || 'Citizen'}</span>
+                    <span>Reported by: {issue.reportedBy?.name || issue.reportedBy?.username || (typeof issue.reportedBy === 'string' ? issue.reportedBy : 'Citizen')}</span>
                     <span>•</span>
-                    {issue.assignedTo && <span>• Assigned to: {issue.assignedTo?.name || issue.assignedTo}</span>}
-                    {issue.status.toUpperCase() === 'ESCALATED' && <span style={{ color: 'var(--color-error)' }}>⚠ Escalated</span>}
+                    {issue.assignedTo && <span>• Assigned to: {issue.assignedTo?.name || issue.assignedTo?.username || (typeof issue.assignedTo === 'string' ? issue.assignedTo : 'Officer')}</span>}
+                    {issue.status?.toUpperCase() === 'ESCALATED' && <span style={{ color: 'var(--color-error)' }}>⚠ Escalated</span>}
                 </div>
 
                 <div className="flex items-center gap-4" style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
@@ -71,13 +71,15 @@ export default function IssueCard({ issue, isOfficer }) {
                             <span className="text-sm font-semibold text-gray">Update Status:</span>
                             <select
                                 className="select-input text-sm font-bold"
-                                value={issue.status.toUpperCase()}
+                                value={issue.status?.toUpperCase() || 'REPORTED'}
                                 onChange={(e) => updateStatusLocal(issue.id, e.target.value)}
                                 style={{ padding: '0.25rem 0.5rem', borderRadius: '6px' }}
                             >
                                 <option value="REPORTED">REPORTED</option>
                                 <option value="IN PROGRESS">IN PROGRESS</option>
                                 <option value="RESOLVED">RESOLVED</option>
+                                <option value="ESCALATED">ESCALATED</option>
+                                <option value="REOPENED">REOPENED</option>
                             </select>
                         </>
                     )}
