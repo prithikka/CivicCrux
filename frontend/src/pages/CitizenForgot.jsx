@@ -9,7 +9,8 @@ export default function CitizenForgot() {
     const [resetToken, setResetToken] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    
+    const [showPassword, setShowPassword] = useState(false);
+
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -37,7 +38,16 @@ export default function CitizenForgot() {
     const handleReset = async (e) => {
         e.preventDefault();
         setError('');
-        
+
+        const minLength = newPassword.length >= 8;
+        const hasUpper = /[A-Z]/.test(newPassword);
+        const hasLower = /[a-z]/.test(newPassword);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+        if (!minLength || !hasUpper || !hasLower || !hasSpecial) {
+            setError('Password must be at least 8 characters, include uppercase, lowercase, and special character.');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setError('Passwords do not match');
             return;
@@ -87,11 +97,21 @@ export default function CitizenForgot() {
                     <form onSubmit={handleReset} className="flex flex-col gap-4 text-left">
                         <div>
                             <label className="block text-sm font-medium mb-1">New Password</label>
-                            <input type="password" className="input w-full" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength="6" />
+                            <div style={{ position: 'relative' }}>
+                                <input type={showPassword ? "text" : "password"} className="input w-full" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength="8" />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                            <input type="password" className="input w-full" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength="6" />
+                            <div style={{ position: 'relative' }}>
+                                <input type={showPassword ? "text" : "password"} className="input w-full" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength="8" />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" className="btn btn-primary w-full mt-2">Reset Password</button>
                     </form>

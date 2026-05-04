@@ -5,6 +5,7 @@ export default function CitizenLogin() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -41,7 +42,12 @@ export default function CitizenLogin() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Password</label>
-                        <input type="password" className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                        <div style={{ position: 'relative' }}>
+                            <input type={showPassword ? "text" : "password"} className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                {showPassword ? '🙈' : '👁️'}
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" className="btn btn-primary w-full mt-2">Login</button>
                 </form>

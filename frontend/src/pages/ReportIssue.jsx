@@ -26,6 +26,11 @@ export default function ReportIssue() {
         setLoading(true);
         setError(null);
         try {
+            if (!imageFile) throw new Error('upload image');
+            if (imageFile.size > 10 * 1024 * 1024) throw new Error('image size too large');
+            if (!formData.ward) throw new Error('area missing');
+            if (!formData.description) throw new Error('description required');
+
             let imageUrl = null;
             if (imageFile) {
                 const uploadData = new FormData();

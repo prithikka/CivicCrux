@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const userSchema = mongoose.Schema(
     {
         name: { type: String }, // Made optional since signup only requested username, email, password
-        username: { type: String, unique: true, sparse: true },
+        username: { type: String, unique: true, sparse: true, minlength: [5, "Username must be at least 5 characters long."] },
         email: { type: String, required: true, unique: true },
         phone: { type: String, unique: true, sparse: true },
         password: { type: String, required: true },

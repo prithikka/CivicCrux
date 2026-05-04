@@ -3,6 +3,11 @@ const Complaint = require('../models/Complaint');
 const createComplaint = async (req, res) => {
     try {
         const { title, description, category, ward, location, lat, lng, imageUrl } = req.body;
+
+        if (!imageUrl) return res.status(400).json({ message: 'upload image' });
+        if (!ward) return res.status(400).json({ message: 'area missing' });
+        if (!description) return res.status(400).json({ message: 'description required' });
+
         const complaint = new Complaint({
             title, description, category, ward, location,
             gpsCoordinates: (lat && lng) ? { lat, lng } : null,

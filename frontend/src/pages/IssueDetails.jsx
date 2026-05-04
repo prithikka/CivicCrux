@@ -129,7 +129,9 @@ export default function IssueDetails() {
                         <div className="flex gap-4 flex-wrap">
                             <div className="w-full" style={{ flex: 1, minWidth: '200px' }}>
                                 <p className="text-sm font-bold mb-2">Evidence Image</p>
-                                <img src={issue.imageUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=300'} alt="evidence" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }} />
+                                {issue.imageUrl && (
+                                    <img src={issue.imageUrl} alt="evidence" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '12px', marginBottom: '1.5rem' }} />
+                                )}
                                 <p className="text-xs text-gray mt-2">GPS: {issue.gpsCoordinates?.lat || 'N/A'}, {issue.gpsCoordinates?.lng || 'N/A'}</p>
                             </div>
                             <div className="w-full" style={{ flex: 1, minWidth: '200px' }}>

@@ -7,6 +7,18 @@ const registerCitizen = async (req, res) => {
     try {
         const { username, email, phone, password, dob } = req.body;
 
+        if (!username || username.length < 5) {
+            return res.status(400).json({ message: 'Username must be at least 5 characters long.' });
+        }
+
+        const minLength = password?.length >= 8;
+        const hasUpper = /[A-Z]/.test(password || '');
+        const hasLower = /[a-z]/.test(password || '');
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password || '');
+        if (!minLength || !hasUpper || !hasLower || !hasSpecial) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters and include at least 1 uppercase letter, 1 lowercase letter, and 1 special character.' });
+        }
+
         // Check if email already exists
         const emailExists = await User.findOne({ email });
         if (emailExists) {
@@ -144,7 +156,7 @@ const forgotPasswordRequest = async (req, res) => {
 const forgotPasswordVerify = async (req, res) => {
     try {
         const { identifier, dob } = req.body;
-        
+
         const user = await User.findOne({
             $or: [{ email: identifier }, { phone: identifier }],
             role: 'citizen'
@@ -177,10 +189,10 @@ const forgotPasswordVerify = async (req, res) => {
 
         const resetToken = crypto.randomBytes(20).toString('hex');
         const hashedResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-        
+
         user.resetToken = hashedResetToken;
         user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
-        
+
         await user.save();
 
         res.json({ success: true, resetToken });
@@ -204,6 +216,19 @@ const forgotPasswordReset = async (req, res) => {
 
         if (!user) {
             return res.status(400).json({ message: 'Invalid or expired reset token' });
+        }
+
+        const minLength = newPassword?.length >= 8;
+        const hasUpper = /[A-Z]/.test(newPassword || '');
+        const hasLower = /[a-z]/.test(newPassword || '');
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword || '');
+        if (!minLength || !hasUpper || !hasLower || !hasSpecial) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters and include at least 1 uppercase letter, 1 lowercase letter, and 1 special character.' });
+        }
+
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+        if (isSamePassword) {
+            return res.status(400).json({ message: 'old password. enter a new password' });
         }
 
         user.password = newPassword; // Will be hashed by pre-save hook in User model

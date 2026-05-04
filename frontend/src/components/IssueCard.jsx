@@ -38,11 +38,13 @@ export default function IssueCard({ issue, isOfficer }) {
     return (
         <div className="card issue-card flex gap-4" style={{ marginBottom: '1rem', border: '1px solid #f0f0f0' }}>
             <Link to={`/issue/${issue.id}`} style={{ textDecoration: 'none' }}>
-                <img
-                    src={issue.imageUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=150'}
-                    alt={issue.title}
-                    style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '12px' }}
-                />
+                {issue.imageUrl && (
+                    <img
+                        src={issue.imageUrl}
+                        alt={issue.title}
+                        style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '12px' }}
+                    />
+                )}
             </Link>
 
             <div className="flex flex-col w-full justify-between">

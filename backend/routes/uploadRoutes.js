@@ -26,24 +26,35 @@ const checkFileType = (file, cb) => {
     if (extname && mimetype) {
         return cb(null, true);
     } else {
-        cb('Images only!');
+        cb(new Error('image format not accepted'));
     }
 };
 
 const upload = multer({
     storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     },
 });
 
-router.post('/', upload.single('image'), (req, res) => {
-    if (req.file) {
-        // Return relative url format
-        res.send({ imageUrl: `/${req.file.path.replace(/\\/g, '/')}` });
-    } else {
-        res.status(400).json({ message: 'No image uploaded' });
-    }
+router.post('/', (req, res) => {
+    upload.single('image')(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ message: 'image size too large' });
+            }
+            return res.status(400).json({ message: err.message });
+        } else if (err) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        if (req.file) {
+            res.send({ imageUrl: `/${req.file.path.replace(/\\/g, '/')}` });
+        } else {
+            res.status(400).json({ message: 'upload image' });
+        }
+    });
 });
 
 module.exports = router;

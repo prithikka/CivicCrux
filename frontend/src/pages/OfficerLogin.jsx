@@ -5,6 +5,7 @@ export default function OfficerLogin() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -49,7 +50,12 @@ export default function OfficerLogin() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">Password</label>
-                        <input type="password" className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                        <div style={{ position: 'relative' }}>
+                            <input type={showPassword ? "text" : "password"} className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                {showPassword ? '🙈' : '👁️'}
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" className="btn w-full mt-2" style={{ background: 'var(--color-success)', color: 'white', border: 'none' }}>Login</button>
                 </form>
