@@ -42,7 +42,7 @@ export default function OfficerDashboard() {
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <Header
                 title="Officer Dashboard"
-                user={user.name || "Loading..."}
+                user={user.username ? user.username : (user.name || "Loading...")}
                 ward={user.ward || "..."}
             />
 

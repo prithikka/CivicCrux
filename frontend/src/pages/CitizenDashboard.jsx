@@ -41,7 +41,7 @@ export default function CitizenDashboard() {
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <Header
                 title="My Civic Reports"
-                user={user.name ? `${user.name} (Citizen)` : "Loading..."}
+                user={user.username ? `${user.username} (Citizen)` : (user.name ? `${user.name} (Citizen)` : "Loading...")}
                 extraAction={
                     <Link to="/report" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', textDecoration: 'none' }}>+ Report New Issue</Link>
                 }
