@@ -60,8 +60,22 @@ const updateComplaintStatus = async (req, res) => {
         const complaint = await Complaint.findById(req.params.id);
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
-        if (req.user.role === 'officer' && complaint.ward !== req.user.ward) {
-            return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
+        if (req.user.role === 'officer') {
+            if (complaint.ward !== req.user.ward) {
+                return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
+            }
+            if (complaint.status === 'REOPENED' || complaint.status === 'ESCALATED') {
+                return res.status(403).json({ message: 'Cannot update: Issue is read-only (REOPENED/ESCALATED)' });
+            }
+            if (status === 'REPORTED' && complaint.status === 'IN PROGRESS') {
+                return res.status(400).json({ message: 'Cannot move IN_PROGRESS issue back to REPORTED' });
+            }
+            if (status === 'IN PROGRESS' && complaint.status === 'RESOLVED') {
+                return res.status(400).json({ message: 'Cannot move RESOLVED issue back to IN_PROGRESS' });
+            }
+            if (status === 'REPORTED' && complaint.status === 'RESOLVED') {
+                return res.status(400).json({ message: 'Cannot move RESOLVED issue back to REPORTED' });
+            }
         }
 
         if (status && complaint.status !== status) {
@@ -122,4 +136,28 @@ const raiseComplaint = async (req, res) => {
     }
 };
 
-module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint };
+const reassignComplaint = async (req, res) => {
+    try {
+        const { assignedTo, ward } = req.body;
+        const complaint = await Complaint.findById(req.params.id);
+
+        if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
+
+        complaint.assignedTo = assignedTo;
+        if (ward) complaint.ward = ward;
+
+        complaint.history.push({
+            status: complaint.status,
+            note: `Reassigned to new officer in ${ward || complaint.ward}`,
+            changedByRole: 'admin',
+            changedBy: req.user._id
+        });
+
+        const updatedComplaint = await complaint.save();
+        res.json(updatedComplaint);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint, reassignComplaint };

@@ -11,6 +11,7 @@ export default function IssueDetails() {
 
     const [resolutionFile, setResolutionFile] = useState(null);
     const [remarks, setRemarks] = useState('');
+    const [targetStatus, setTargetStatus] = useState('IN PROGRESS');
     const [updating, setUpdating] = useState(false);
     const [updateError, setUpdateError] = useState('');
 
@@ -40,28 +41,30 @@ export default function IssueDetails() {
         fetchIssue();
     }, [id]);
 
-    const handleResolve = async (e) => {
+    const handleUpdateStatus = async (e) => {
         e.preventDefault();
         setUpdating(true); setUpdateError('');
         try {
-            if (!resolutionFile) throw new Error('Resolution proof image is required to mark as Resolved.');
-
-            const uploadData = new FormData();
-            uploadData.append('image', resolutionFile);
-            const uploadRes = await fetch('http://localhost:5000/api/uploads', { method: 'POST', body: uploadData });
-            if (!uploadRes.ok) throw new Error('Proof image upload failed');
-            const uploadResult = await uploadRes.json();
-            const resolutionImageUrl = `http://localhost:5000${uploadResult.imageUrl}`;
+            let resolutionImageUrl = null;
+            if (targetStatus === 'RESOLVED') {
+                if (!resolutionFile) throw new Error('Resolution proof image is required to mark as Resolved.');
+                const uploadData = new FormData();
+                uploadData.append('image', resolutionFile);
+                const uploadRes = await fetch('http://localhost:5000/api/uploads', { method: 'POST', body: uploadData });
+                if (!uploadRes.ok) throw new Error('Proof image upload failed');
+                const uploadResult = await uploadRes.json();
+                resolutionImageUrl = `http://localhost:5000${uploadResult.imageUrl}`;
+            }
 
             const res = await fetch(`http://localhost:5000/api/complaints/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-                body: JSON.stringify({ status: 'RESOLVED', resolutionImageUrl, officerRemarks: remarks })
+                body: JSON.stringify({ status: targetStatus, resolutionImageUrl, officerRemarks: remarks })
             });
 
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.message || 'Failed to resolve issue');
+                throw new Error(errData.message || 'Failed to update status');
             }
             window.location.reload();
         } catch (e) {
@@ -135,28 +138,57 @@ export default function IssueDetails() {
                                 <p className="text-xs text-gray mt-2">GPS: {issue.gpsCoordinates?.lat || 'N/A'}, {issue.gpsCoordinates?.lng || 'N/A'}</p>
                             </div>
                             <div className="w-full" style={{ flex: 1, minWidth: '200px' }}>
-                                <p className="text-sm font-bold mb-2">Resolution Image</p>
+                                <p className="text-sm font-bold mb-2">Resolution Log / Action</p>
                                 {issue.status === 'RESOLVED' ? (
                                     <>
-                                        <img src={issue.resolutionImageUrl} alt="resolved" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }} />
+                                        {issue.resolutionImageUrl ? (
+                                            <img src={issue.resolutionImageUrl} alt="resolved" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }} />
+                                        ) : (
+                                            <div style={{ padding: '1rem', background: '#f5f5f5', borderRadius: '8px', fontSize: '0.85rem' }}>No Image Provided</div>
+                                        )}
                                         {issue.officerRemarks && <div className="mt-2 text-sm"><strong>Officer Remarks:</strong> {issue.officerRemarks}</div>}
                                     </>
+                                ) : isOfficer && (issue.status === 'REOPENED' || issue.status === 'ESCALATED') ? (
+                                    <div style={{ width: '100%', padding: '2rem', border: '1px dashed var(--color-border)', borderRadius: '8px', textAlign: 'center', background: '#ffeef0' }}>
+                                        <span className="text-sm font-bold text-error">Issue is pending Admin review / reassignment (Read-Only)</span>
+                                    </div>
                                 ) : isOfficer ? (
-                                    <form onSubmit={handleResolve} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <form onSubmit={handleUpdateStatus} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                         {updateError && <div className="text-xs text-error font-bold">{updateError}</div>}
-                                        <div style={{ border: '2px dashed var(--color-border)', padding: '1rem', borderRadius: '8px', background: '#fafbff', textAlign: 'center' }}>
-                                            <p className="text-xs font-bold mb-2 text-primary">Upload Proof (Required)</p>
-                                            <input type="file" required accept="image/*" className="text-xs w-full" onChange={e => setResolutionFile(e.target.files[0])} />
+
+                                        <div>
+                                            <label className="text-xs font-bold block mb-1">Update Status:</label>
+                                            <select
+                                                className="input w-full text-sm"
+                                                style={{ padding: '0.5rem', borderRadius: '6px' }}
+                                                value={targetStatus}
+                                                onChange={(e) => setTargetStatus(e.target.value)}
+                                            >
+                                                {issue.status === 'REPORTED' && <option value="IN PROGRESS">Begin Investigation (In Progress)</option>}
+                                                {(issue.status === 'REPORTED' || issue.status === 'IN PROGRESS' || issue.status === 'IN PROCESS') && <option value="RESOLVED">Finalize & Mark Resolved</option>}
+                                            </select>
                                         </div>
-                                        <textarea
-                                            className="select-input w-full text-sm"
-                                            placeholder="Add resolution remarks..."
-                                            rows="2"
-                                            value={remarks}
-                                            onChange={e => setRemarks(e.target.value)}
-                                        />
+
+                                        {targetStatus === 'RESOLVED' && (
+                                            <div style={{ border: '2px dashed var(--color-border)', padding: '1rem', borderRadius: '8px', background: '#fafbff', textAlign: 'center' }}>
+                                                <p className="text-xs font-bold mb-2 text-primary">Upload Proof (Required)</p>
+                                                <input type="file" required accept="image/*" className="text-xs w-full" onChange={e => setResolutionFile(e.target.files[0])} />
+                                            </div>
+                                        )}
+
+                                        <div>
+                                            <label className="text-xs font-bold block mb-1">Officer Notes:</label>
+                                            <textarea
+                                                className="select-input w-full text-sm"
+                                                placeholder="Add context to this update..."
+                                                rows="2"
+                                                value={remarks}
+                                                onChange={e => setRemarks(e.target.value)}
+                                            />
+                                        </div>
+
                                         <button type="submit" disabled={updating} className="btn btn-primary text-sm font-bold">
-                                            {updating ? 'Resolving...' : 'Upload & Mark Resolved'}
+                                            {updating ? 'Updating...' : `Log Status: ${targetStatus}`}
                                         </button>
                                     </form>
                                 ) : (
