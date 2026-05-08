@@ -142,6 +142,6 @@ JWT_SECRET=
 
 ---
 
-# Acknowledgement
+## Acknowledgement
 
 Developed as part of a MERN Stack academic project.
