@@ -34,7 +34,7 @@ export default function Home() {
                     <p className="text-sm text-gray" style={{ marginBottom: '2rem', minHeight: '40px' }}>
                         Manage and resolve reported issues in your ward with accountability scoring and automated metrics tracking.
                     </p>
-                    <Link to="/officer-login" className="btn font-bold w-full flex items-center justify-center" style={{ background: 'var(--color-success)', color: 'white', border: 'none' }}>Staff Log in →</Link>
+                    <Link to="/officer-login" className="btn font-bold w-full flex items-center justify-center" style={{ background: 'var(--color-success)', color: 'white', border: 'none' }}>Officer/Admin Log in →</Link>
                 </div>
             </div>
 

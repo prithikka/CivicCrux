@@ -72,54 +72,68 @@ export default function CitizenForgot() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-8 min-h-screen bg-gray-100">
-            <div className="card p-8 w-full max-w-md bg-white rounded shadow text-center">
-                <h2 className="text-2xl font-bold mb-6 text-primary">Reset Password</h2>
-                {error && <p className="text-red-500 mb-4">{error}</p>}
-                {success && <p className="text-green-500 mb-4 font-bold">{success}</p>}
+        <div className="flex flex-col items-center justify-center p-4" style={{ backgroundColor: '#f4f7fe', minHeight: '100vh' }}>
+            <div className="text-center mb-6 mt-2">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                    <img src="/logo.png" alt="CivicCrux Logo" style={{ width: '42px', height: '42px' }} />
+                    <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', margin: 0 }}>CivicCrux</h1>
+                </div>
+                <p className="text-sm text-gray" style={{ color: 'var(--text-secondary)' }}>Recover your account access</p>
+            </div>
 
-                {step === 1 && (
-                    <form onSubmit={handleVerify} className="flex flex-col gap-4 text-left">
-                        <p className="text-sm text-gray-600 mb-2">Please enter your registered email/phone and Date of Birth.</p>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email or Phone</label>
-                            <input type="text" className="input w-full" value={identifier} onChange={e => setIdentifier(e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Date of Birth</label>
-                            <input type="text" placeholder="DD/MM/YYYY" className="input w-full" value={dob} onChange={e => setDob(e.target.value)} required />
-                        </div>
-                        <button type="submit" className="btn btn-primary w-full mt-2">Verify</button>
-                    </form>
-                )}
+            <div className="bg-white w-full max-w-sm rounded-xl shadow-sm overflow-hidden" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', maxWidth: '400px' }}>
+                <div className="p-6">
+                    <h2 className="text-xl font-bold text-center mb-6" style={{ color: 'var(--text-primary)' }}>Reset Password</h2>
+                    {error && <p className="text-red-500 mb-4 text-sm font-bold text-center">{error}</p>}
+                    {success && <p className="text-green-500 mb-4 text-sm font-bold text-center">{success}</p>}
 
-                {step === 2 && (
-                    <form onSubmit={handleReset} className="flex flex-col gap-4 text-left">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">New Password</label>
-                            <div style={{ position: 'relative' }}>
-                                <input type={showPassword ? "text" : "password"} className="input w-full" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength="8" />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                    {showPassword ? '🙈' : '👁️'}
-                                </button>
+                    {step === 1 && (
+                        <form onSubmit={handleVerify} className="flex flex-col gap-4 text-left border-b border-gray-200 pb-6 mb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                            <p className="text-xs text-gray-600 mb-2 font-bold" style={{ color: 'var(--text-secondary)' }}>Please enter your registered email/phone and Date of Birth.</p>
+                            <div>
+                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Email or Phone</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input type="text" className="input w-full" value={identifier} onChange={e => setIdentifier(e.target.value)} required placeholder="your.email@example.com" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                            <div style={{ position: 'relative' }}>
-                                <input type={showPassword ? "text" : "password"} className="input w-full" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength="8" />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                    {showPassword ? '🙈' : '👁️'}
-                                </button>
+                            <div>
+                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Date of Birth</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input type="text" placeholder="DD/MM/YYYY" className="input w-full" value={dob} onChange={e => setDob(e.target.value)} required style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
+                                </div>
                             </div>
-                        </div>
-                        <button type="submit" className="btn btn-primary w-full mt-2">Reset Password</button>
-                    </form>
-                )}
+                            <button type="submit" className="btn btn-primary w-full mt-2" style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', background: 'var(--color-primary)' }}>Verify</button>
+                        </form>
+                    )}
 
-                <p className="mt-6 text-sm text-gray-600">
-                    <Link to="/citizen-login" className="text-primary hover:underline">Back to Login</Link>
-                </p>
+                    {step === 2 && (
+                        <form onSubmit={handleReset} className="flex flex-col gap-4 text-left border-b border-gray-200 pb-6 mb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                            <div>
+                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>New Password</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input type={showPassword ? "text" : "password"} className="input w-full" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength="8" placeholder="Enter new password" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 2.5rem 0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                                        {showPassword ? '🙈' : '👁️'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Confirm Password</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input type={showPassword ? "text" : "password"} className="input w-full" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength="8" placeholder="Confirm new password" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 2.5rem 0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                                        {showPassword ? '🙈' : '👁️'}
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="submit" className="btn btn-primary w-full mt-2" style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', background: 'var(--color-primary)' }}>Reset Password</button>
+                        </form>
+                    )}
+                </div>
+
+                <div className="py-4 text-center" style={{ backgroundColor: '#f9fafb' }}>
+                    <Link to="/citizen-login" className="text-sm font-bold hover:underline" style={{ color: 'var(--color-primary)' }}>Back to Login</Link>
+                </div>
             </div>
         </div>
     );
