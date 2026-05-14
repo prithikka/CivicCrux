@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default function IssueCard({ issue, isOfficer }) {
+export default function IssueCard({ issue, isOfficer, isAdmin, officers, onReassign }) {
     const getBadgeClass = (status) => {
         switch (status?.toUpperCase()) {
             case 'IN PROGRESS': case 'IN PROCESS': return 'badge-in-process';
@@ -85,9 +85,26 @@ export default function IssueCard({ issue, isOfficer }) {
                             </select>
                         </>
                     )}
-                    <Link to={`/issue/${issue.id}`} className="text-sm font-bold" style={{ marginLeft: 'auto', color: 'var(--color-primary)', textDecoration: 'none' }}>
-                        View Details →
-                    </Link>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {isAdmin && !issue.reassignedOnce && (issue.status?.toUpperCase() === 'REOPENED' || issue.status?.toUpperCase() === 'ESCALATED') && (
+                            <select
+                                className="select-input text-sm font-bold"
+                                style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', borderColor: 'var(--color-warning)' }}
+                                onChange={(e) => {
+                                    if (onReassign) onReassign(issue.id || issue._id, e.target.value);
+                                }}
+                                defaultValue=""
+                            >
+                                <option value="" disabled>🛡️ Reassign...</option>
+                                {officers && officers.map(o => (
+                                    <option key={o._id} value={o._id}>{o.username || o.name} ({o.ward})</option>
+                                ))}
+                            </select>
+                        )}
+                        <Link to={`/issue/${issue.id}`} className="text-sm font-bold" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
+                            View Details →
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

@@ -11,6 +11,12 @@ router.post('/logout', (req, res) => {
 });
 router.get('/me', protect, getMe);
 
+router.get('/me', protect, getMe);
+
+// Admin User Management
+router.get('/users', protect, authorize('admin'), getAllUsers);
+router.delete('/users/:id', protect, authorize('admin'), deleteUser);
+
 // Forgot Password Routes
 router.post('/forgot-password/request', forgotPasswordRequest);
 router.post('/forgot-password/verify', forgotPasswordVerify);

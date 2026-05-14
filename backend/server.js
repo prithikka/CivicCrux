@@ -6,6 +6,36 @@ require('dotenv').config();
 // Connect to MongoDB
 connectDB();
 
+const cron = require('node-cron');
+const Complaint = require('./models/Complaint');
+
+// Auto-escalation cron job (Runs every day at midnight)
+cron.schedule('0 0 * * *', async () => {
+    try {
+        console.log('Running daily auto-escalation check...');
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+        const complaintsToEscalate = await Complaint.find({
+            status: 'REPORTED',
+            createdAt: { $lte: fourteenDaysAgo }
+        });
+
+        for (let complaint of complaintsToEscalate) {
+            complaint.status = 'ESCALATED';
+            complaint.history.push({
+                status: 'ESCALATED',
+                note: 'Automatically escalated due to 14 days of inactivity',
+                changedByRole: 'system'
+            });
+            await complaint.save();
+            console.log(`Complaint ${complaint._id} auto-escalated.`);
+        }
+    } catch (err) {
+        console.error('Error in auto-escalation cron job:', err);
+    }
+});
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
