@@ -82,6 +82,9 @@ export default function IssueCard({ issue, isOfficer, isAdmin, officers, onReass
                                 <option value="REPORTED" disabled={issue.status?.toUpperCase() !== 'REPORTED'}>REPORTED</option>
                                 <option value="IN PROGRESS" disabled={issue.status?.toUpperCase() === 'RESOLVED'}>IN PROGRESS</option>
                                 <option value="RESOLVED" disabled={['REPORTED', 'RESOLVED'].includes(issue.status?.toUpperCase())}>RESOLVED</option>
+                                {['ESCALATED', 'REOPENED'].includes(issue.status?.toUpperCase()) && (
+                                    <option value={issue.status.toUpperCase()} disabled>{issue.status.toUpperCase()}</option>
+                                )}
                             </select>
                         </>
                     )}
