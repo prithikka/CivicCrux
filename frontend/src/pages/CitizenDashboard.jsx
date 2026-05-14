@@ -9,6 +9,7 @@ export default function CitizenDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [user, setUser] = useState({});
+    const [filterStatus, setFilterStatus] = useState('All');
 
     useEffect(() => {
         const fetchIssues = async () => {
@@ -59,17 +60,33 @@ export default function CitizenDashboard() {
 
                 <div className="card" style={{ marginBottom: '2rem' }}>
                     <div className="flex gap-2 text-sm font-bold flex-wrap">
-                        <button className="btn btn-primary" style={{ borderRadius: '999px', padding: '0.25rem 1rem' }}>All Issues</button>
-                        <button className="btn btn-outline" style={{ border: 'none', color: 'var(--text-secondary)' }}>Reported</button>
-                        <button className="btn btn-outline" style={{ border: 'none', color: 'var(--text-secondary)' }}>In Process</button>
-                        <button className="btn btn-outline" style={{ border: 'none', color: 'var(--text-secondary)' }}>Resolved</button>
+                        <button 
+                            className={filterStatus === 'All' ? 'btn btn-primary' : 'btn btn-outline'} 
+                            style={{ borderRadius: '999px', padding: '0.25rem 1rem', ...(filterStatus !== 'All' ? { border: 'none', color: 'var(--text-secondary)' } : {}) }}
+                            onClick={() => setFilterStatus('All')}
+                        >All Issues</button>
+                        <button 
+                            className={filterStatus === 'REPORTED' ? 'btn btn-primary' : 'btn btn-outline'} 
+                            style={{ borderRadius: '999px', padding: '0.25rem 1rem', ...(filterStatus !== 'REPORTED' ? { border: 'none', color: 'var(--text-secondary)' } : {}) }}
+                            onClick={() => setFilterStatus('REPORTED')}
+                        >Reported</button>
+                        <button 
+                            className={filterStatus === 'IN PROGRESS' ? 'btn btn-primary' : 'btn btn-outline'} 
+                            style={{ borderRadius: '999px', padding: '0.25rem 1rem', ...(filterStatus !== 'IN PROGRESS' ? { border: 'none', color: 'var(--text-secondary)' } : {}) }}
+                            onClick={() => setFilterStatus('IN PROGRESS')}
+                        >In Process</button>
+                        <button 
+                            className={filterStatus === 'RESOLVED' ? 'btn btn-primary' : 'btn btn-outline'} 
+                            style={{ borderRadius: '999px', padding: '0.25rem 1rem', ...(filterStatus !== 'RESOLVED' ? { border: 'none', color: 'var(--text-secondary)' } : {}) }}
+                            onClick={() => setFilterStatus('RESOLVED')}
+                        >Resolved</button>
                     </div>
                 </div>
 
                 {loading ? <p>Loading issues...</p> : (
                     <div className="flex flex-col gap-4">
-                        {issues.length === 0 && <p className="text-gray text-center p-8">You haven't reported any issues yet.</p>}
-                        {issues.map(issue => (
+                        {issues.filter(i => filterStatus === 'All' || i.status === filterStatus).length === 0 && <p className="text-gray text-center p-8">No issues found.</p>}
+                        {issues.filter(i => filterStatus === 'All' || i.status === filterStatus).map(issue => (
                             <IssueCard key={issue._id} issue={{ ...issue, id: issue._id }} isOfficer={false} />
                         ))}
                     </div>
