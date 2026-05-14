@@ -2,15 +2,15 @@ const Complaint = require('../models/Complaint');
 
 const checkEscalations = async () => {
     try {
-        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-        const toEscalate = await Complaint.find({ status: 'REPORTED', createdAt: { $lte: fourteenDaysAgo } });
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const toEscalate = await Complaint.find({ status: 'REPORTED', createdAt: { $lte: sevenDaysAgo } });
 
         for (const c of toEscalate) {
             c.status = 'ESCALATED';
             c.assignedTo = null; // Unassign from officer
             c.history.push({
                 status: 'ESCALATED',
-                note: 'Automatically escalated due to 14 days of inactivity',
+                note: 'Automatically escalated due to 7 days of inactivity',
                 changedByRole: 'system'
             });
             await c.save();
