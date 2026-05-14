@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { registerCitizen, loginCitizen, loginOfficer, getMe, forgotPasswordRequest, forgotPasswordVerify, forgotPasswordReset } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { registerCitizen, loginCitizen, loginOfficer, getMe, forgotPasswordRequest, forgotPasswordVerify, forgotPasswordReset, getAllUsers, deleteUser } = require('../controllers/authController');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.post('/register', registerCitizen);
 router.post('/citizen-login', loginCitizen);
@@ -15,5 +15,9 @@ router.get('/me', protect, getMe);
 router.post('/forgot-password/request', forgotPasswordRequest);
 router.post('/forgot-password/verify', forgotPasswordVerify);
 router.post('/forgot-password/reset', forgotPasswordReset);
+
+// Admin User Management Routes
+router.get('/users', protect, authorize('admin'), getAllUsers);
+router.delete('/users/:id', protect, authorize('admin'), deleteUser);
 
 module.exports = router;

@@ -8,6 +8,7 @@ export default function IssueCard({ issue, isOfficer }) {
             case 'REPORTED': return 'badge-reported';
             case 'RESOLVED': return 'badge-resolved';
             case 'ESCALATED': return 'badge-escalated';
+            case 'REOPENED': return 'badge-reopened'; // Orange badge for reopened
             default: return '';
         }
     };
@@ -76,12 +77,11 @@ export default function IssueCard({ issue, isOfficer }) {
                                 value={issue.status?.toUpperCase() || 'REPORTED'}
                                 onChange={(e) => updateStatusLocal(issue.id, e.target.value)}
                                 style={{ padding: '0.25rem 0.5rem', borderRadius: '6px' }}
+                                disabled={issue.status?.toUpperCase() === 'RESOLVED'}
                             >
-                                <option value="REPORTED">REPORTED</option>
-                                <option value="IN PROGRESS">IN PROGRESS</option>
-                                <option value="RESOLVED">RESOLVED</option>
-                                <option value="ESCALATED">ESCALATED</option>
-                                <option value="REOPENED">REOPENED</option>
+                                <option value="REPORTED" disabled={issue.status?.toUpperCase() !== 'REPORTED'}>REPORTED</option>
+                                <option value="IN PROGRESS" disabled={issue.status?.toUpperCase() === 'RESOLVED'}>IN PROGRESS</option>
+                                <option value="RESOLVED" disabled={['REPORTED', 'RESOLVED'].includes(issue.status?.toUpperCase())}>RESOLVED</option>
                             </select>
                         </>
                     )}

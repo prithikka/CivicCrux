@@ -97,7 +97,8 @@ export default function IssueDetails() {
             case 'IN PROGRESS': case 'IN PROCESS': return 'badge-in-process';
             case 'REPORTED': return 'badge-reported';
             case 'RESOLVED': return 'badge-resolved';
-            case 'ESCALATED': case 'REOPENED': return 'badge-escalated';
+            case 'ESCALATED': return 'badge-escalated';
+            case 'REOPENED': return 'badge-reopened';
             default: return '';
         }
     };
@@ -142,23 +143,29 @@ export default function IssueDetails() {
                                         {issue.officerRemarks && <div className="mt-2 text-sm"><strong>Officer Remarks:</strong> {issue.officerRemarks}</div>}
                                     </>
                                 ) : isOfficer ? (
-                                    <form onSubmit={handleResolve} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        {updateError && <div className="text-xs text-error font-bold">{updateError}</div>}
-                                        <div style={{ border: '2px dashed var(--color-border)', padding: '1rem', borderRadius: '8px', background: '#fafbff', textAlign: 'center' }}>
-                                            <p className="text-xs font-bold mb-2 text-primary">Upload Proof (Required)</p>
-                                            <input type="file" required accept="image/*" className="text-xs w-full" onChange={e => setResolutionFile(e.target.files[0])} />
+                                    issue.status === 'REPORTED' ? (
+                                        <div style={{ width: '100%', height: '200px', border: '1px dashed var(--color-border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafbff', textAlign: 'center', padding: '1rem' }}>
+                                            <span className="text-xs text-gray font-bold">Please update the status to "In Progress" from the dashboard before uploading resolution proof.</span>
                                         </div>
-                                        <textarea
-                                            className="select-input w-full text-sm"
-                                            placeholder="Add resolution remarks..."
-                                            rows="2"
-                                            value={remarks}
-                                            onChange={e => setRemarks(e.target.value)}
-                                        />
-                                        <button type="submit" disabled={updating} className="btn btn-primary text-sm font-bold">
-                                            {updating ? 'Resolving...' : 'Upload & Mark Resolved'}
-                                        </button>
-                                    </form>
+                                    ) : (
+                                        <form onSubmit={handleResolve} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {updateError && <div className="text-xs text-error font-bold">{updateError}</div>}
+                                            <div style={{ border: '2px dashed var(--color-border)', padding: '1rem', borderRadius: '8px', background: '#fafbff', textAlign: 'center' }}>
+                                                <p className="text-xs font-bold mb-2 text-primary">Upload Proof (Required)</p>
+                                                <input type="file" required accept="image/*" className="text-xs w-full" onChange={e => setResolutionFile(e.target.files[0])} />
+                                            </div>
+                                            <textarea
+                                                className="select-input w-full text-sm"
+                                                placeholder="Add resolution remarks..."
+                                                rows="2"
+                                                value={remarks}
+                                                onChange={e => setRemarks(e.target.value)}
+                                            />
+                                            <button type="submit" disabled={updating} className="btn btn-primary text-sm font-bold">
+                                                {updating ? 'Resolving...' : 'Upload & Mark Resolved'}
+                                            </button>
+                                        </form>
+                                    )
                                 ) : (
                                     <div style={{ width: '100%', height: '200px', border: '1px dashed var(--color-border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafbff' }}>
                                         <span className="text-xs text-gray">Pending Resolution</span>

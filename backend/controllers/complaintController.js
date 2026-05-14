@@ -1,5 +1,25 @@
 const Complaint = require('../models/Complaint');
 
+const checkEscalations = async () => {
+    try {
+        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+        const toEscalate = await Complaint.find({ status: 'REPORTED', createdAt: { $lte: fourteenDaysAgo } });
+        
+        for (const c of toEscalate) {
+            c.status = 'ESCALATED';
+            c.assignedTo = null; // Unassign from officer
+            c.history.push({
+                status: 'ESCALATED',
+                note: 'Automatically escalated due to 14 days of inactivity',
+                changedByRole: 'system'
+            });
+            await c.save();
+        }
+    } catch (error) {
+        console.error('Error checking escalations:', error);
+    }
+};
+
 const createComplaint = async (req, res) => {
     try {
         const { title, description, category, ward, location, lat, lng, imageUrl } = req.body;
@@ -26,6 +46,7 @@ const createComplaint = async (req, res) => {
 
 const getMyComplaints = async (req, res) => {
     try {
+        await checkEscalations();
         const complaints = await Complaint.find({ reportedBy: req.user._id }).populate('assignedTo', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
@@ -33,7 +54,22 @@ const getMyComplaints = async (req, res) => {
 
 const getOfficerComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name username');
+        await checkEscalations();
+        // Officers shouldn't see escalated or reopened issues directly unless assigned to them.
+        // Actually, if we set assignedTo=null, they might still see them if we only check `ward`.
+        // Let's ensure officers don't see ESCALATED and REOPENED issues unless they are specifically assigned to them by admin, or just generally filter them.
+        // The requirements state: "Escalated issues should no longer remain under the same ward officer until reassigned."
+        // "Admin can reassign the reopened issue to a ward officer."
+        // Let's filter out issues where status is ESCALATED or REOPENED and assignedTo is NOT the current officer.
+        const allWardComplaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name username');
+        
+        const complaints = allWardComplaints.filter(c => {
+            if (['ESCALATED', 'REOPENED'].includes(c.status)) {
+                return c.assignedTo && c.assignedTo.toString() === req.user._id.toString();
+            }
+            return true;
+        });
+
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -60,11 +96,29 @@ const updateComplaintStatus = async (req, res) => {
         const complaint = await Complaint.findById(req.params.id);
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
-        if (req.user.role === 'officer' && complaint.ward !== req.user.ward) {
-            return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
+        if (req.user.role === 'officer') {
+            if (complaint.ward !== req.user.ward) {
+                return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
+            }
+            if (['ESCALATED', 'REOPENED'].includes(complaint.status) && (!complaint.assignedTo || complaint.assignedTo.toString() !== req.user._id.toString())) {
+                return res.status(403).json({ message: 'Not authorized to update this reassigned complaint' });
+            }
         }
 
         if (status && complaint.status !== status) {
+            // Strict forward-only status flow
+            const validTransitions = {
+                'REPORTED': ['IN PROGRESS'],
+                'IN PROGRESS': ['RESOLVED'],
+                'RESOLVED': [],
+                'ESCALATED': ['IN PROGRESS', 'RESOLVED'], // Allow reassigned officer to work on it
+                'REOPENED': ['IN PROGRESS', 'RESOLVED']   // Allow reassigned officer to work on it
+            };
+
+            if (!validTransitions[complaint.status] || !validTransitions[complaint.status].includes(status)) {
+                return res.status(400).json({ message: `Invalid status transition from ${complaint.status} to ${status}` });
+            }
+
             complaint.status = status;
             complaint.history.push({
                 status: status,
@@ -87,6 +141,7 @@ const updateComplaintStatus = async (req, res) => {
 
 const getAllComplaints = async (req, res) => {
     try {
+        await checkEscalations();
         const complaints = await Complaint.find().populate('reportedBy', 'name username email').populate('assignedTo', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
@@ -108,6 +163,7 @@ const raiseComplaint = async (req, res) => {
         }
 
         complaint.status = 'REOPENED';
+        complaint.assignedTo = null; // Remove previous officer mapping
         complaint.history.push({
             status: 'REOPENED',
             note: reason || 'Citizen is not satisfied with the resolution',
@@ -122,4 +178,27 @@ const raiseComplaint = async (req, res) => {
     }
 };
 
-module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint };
+const reassignComplaint = async (req, res) => {
+    try {
+        const { assignedTo } = req.body;
+        const complaint = await Complaint.findById(req.params.id);
+
+        if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
+
+        complaint.assignedTo = assignedTo;
+        
+        complaint.history.push({
+            status: complaint.status,
+            note: 'Complaint reassigned by Admin',
+            changedByRole: 'admin',
+            changedBy: req.user._id
+        });
+
+        const updatedComplaint = await complaint.save();
+        res.json(updatedComplaint);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { createComplaint, getMyComplaints, getOfficerComplaints, getComplaintById, updateComplaintStatus, getAllComplaints, raiseComplaint, reassignComplaint };
