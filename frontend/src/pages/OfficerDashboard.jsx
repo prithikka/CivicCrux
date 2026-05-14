@@ -54,13 +54,14 @@ export default function OfficerDashboard() {
                     <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'REPORTED').length} label="Reported" />
                     <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'IN PROGRESS' || i.status?.toUpperCase() === 'IN PROCESS').length} label="In Process" />
                     <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'RESOLVED').length} label="Resolved" />
-                    <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'ESCALATED' || i.status?.toUpperCase() === 'REOPENED').length} label="Escalated" />
+                    <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'ESCALATED').length} label="Escalated" />
+                    <StatCard count={issues.filter(i => i.status?.toUpperCase() === 'REOPENED').length} label="Reopened" />
                 </div>
 
                 <div className="card flex flex-col gap-2" style={{ marginBottom: '2rem' }}>
                     <div className="text-sm font-bold text-gray mb-2">Filter Issues</div>
                     <div className="flex gap-2 text-sm font-bold flex-wrap">
-                        {['ALL', 'REPORTED', 'IN PROGRESS', 'RESOLVED', 'ESCALATED'].map(status => (
+                        {['ALL', 'REPORTED', 'IN PROGRESS', 'RESOLVED', 'ESCALATED', 'REOPENED'].map(status => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
@@ -79,11 +80,11 @@ export default function OfficerDashboard() {
                 {loading ? <p className="text-gray text-center p-8 font-bold">Loading issues for your ward...</p> : (
                     <div className="flex flex-col gap-4">
                         {issues.length === 0 && <p className="text-gray text-center p-8">No issues found in your designated ward.</p>}
-                        {issues.length > 0 && issues.filter(issue => filterStatus === 'ALL' || issue.status?.toUpperCase() === filterStatus || (filterStatus === 'ESCALATED' && issue.status?.toUpperCase() === 'REOPENED') || (filterStatus === 'IN PROGRESS' && issue.status?.toUpperCase() === 'IN PROCESS')).length === 0 && (
+                        {issues.length > 0 && issues.filter(issue => filterStatus === 'ALL' || issue.status?.toUpperCase() === filterStatus || (filterStatus === 'IN PROGRESS' && issue.status?.toUpperCase() === 'IN PROCESS')).length === 0 && (
                             <p className="text-gray text-center p-8">No issues found for status: {filterStatus}.</p>
                         )}
                         {issues
-                            .filter(issue => filterStatus === 'ALL' || issue.status?.toUpperCase() === filterStatus || (filterStatus === 'ESCALATED' && issue.status?.toUpperCase() === 'REOPENED') || (filterStatus === 'IN PROGRESS' && issue.status?.toUpperCase() === 'IN PROCESS'))
+                            .filter(issue => filterStatus === 'ALL' || issue.status?.toUpperCase() === filterStatus || (filterStatus === 'IN PROGRESS' && issue.status?.toUpperCase() === 'IN PROCESS'))
                             .map(issue => (
                                 <IssueCard key={issue._id} issue={{ ...issue, id: issue._id }} isOfficer={true} />
                             ))}
