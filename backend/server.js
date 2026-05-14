@@ -13,19 +13,19 @@ const Complaint = require('./models/Complaint');
 cron.schedule('0 0 * * *', async () => {
     try {
         console.log('Running daily auto-escalation check...');
-        const fourteenDaysAgo = new Date();
-        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
         const complaintsToEscalate = await Complaint.find({
             status: 'REPORTED',
-            createdAt: { $lte: fourteenDaysAgo }
+            createdAt: { $lte: sevenDaysAgo }
         });
 
         for (let complaint of complaintsToEscalate) {
             complaint.status = 'ESCALATED';
             complaint.history.push({
                 status: 'ESCALATED',
-                note: 'Automatically escalated due to 14 days of inactivity',
+                note: 'Automatically escalated due to 7 days of inactivity',
                 changedByRole: 'system'
             });
             await complaint.save();
