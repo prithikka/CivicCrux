@@ -88,16 +88,17 @@ export default function IssueCard({ issue, isOfficer, isAdmin, officers, onReass
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         {isAdmin && !issue.reassignedOnce && (issue.status?.toUpperCase() === 'REOPENED' || issue.status?.toUpperCase() === 'ESCALATED') && (
                             <select
-                                className="select-input text-sm font-bold"
-                                style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', borderColor: 'var(--color-warning)' }}
+                                className="text-sm font-bold"
+                                style={{ border: 'none', background: 'transparent', outline: 'none', cursor: 'pointer', appearance: 'auto', color: 'var(--color-primary)' }}
                                 onChange={(e) => {
                                     if (onReassign) onReassign(issue.id || issue._id, e.target.value);
+                                    e.target.value = '';
                                 }}
                                 defaultValue=""
                             >
-                                <option value="" disabled>🛡️ Reassign...</option>
+                                <option value="" disabled>Reassign Issue</option>
                                 {officers && officers.map(o => (
-                                    <option key={o._id} value={o._id}>{o.username || o.name} ({o.ward})</option>
+                                    <option key={o._id} value={o._id} style={{ color: 'var(--text-primary)' }}>{o.username || o.name} ({o.ward})</option>
                                 ))}
                             </select>
                         )}

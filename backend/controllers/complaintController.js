@@ -4,7 +4,7 @@ const checkEscalations = async () => {
     try {
         const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
         const toEscalate = await Complaint.find({ status: 'REPORTED', createdAt: { $lte: fourteenDaysAgo } });
-        
+
         for (const c of toEscalate) {
             c.status = 'ESCALATED';
             c.assignedTo = null; // Unassign from officer
@@ -62,7 +62,7 @@ const getOfficerComplaints = async (req, res) => {
         // "Admin can reassign the reopened issue to a ward officer."
         // Let's filter out issues where status is ESCALATED or REOPENED and assignedTo is NOT the current officer.
         const allWardComplaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name username');
-        
+
         const complaints = allWardComplaints.filter(c => {
             if (['ESCALATED', 'REOPENED'].includes(c.status)) {
                 return c.assignedTo && c.assignedTo.toString() === req.user._id.toString();
@@ -185,8 +185,13 @@ const reassignComplaint = async (req, res) => {
 
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
+        if (complaint.reassignedOnce) {
+            return res.status(400).json({ message: 'Complaint has already been reassigned once.' });
+        }
+
         complaint.assignedTo = assignedTo;
-        
+        complaint.reassignedOnce = true;
+
         complaint.history.push({
             status: complaint.status,
             note: 'Complaint reassigned by Admin',
