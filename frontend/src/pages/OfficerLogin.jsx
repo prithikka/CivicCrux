@@ -7,10 +7,6 @@ export default function OfficerLogin() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const [isForgotPassword, setIsForgotPassword] = useState(false);
-    const [forgotEmail, setForgotEmail] = useState('');
-    const [successMsg, setSuccessMsg] = useState('');
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -38,18 +34,6 @@ export default function OfficerLogin() {
         }
     };
 
-    const handleForgotSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccessMsg('');
-        if (!forgotEmail) {
-            setError('Please enter your email.');
-            return;
-        }
-        // Mocking a successful password reset link send
-        setSuccessMsg('Reset link sent to your email.');
-    };
-
     return (
         <div className="flex flex-col items-center justify-center p-4" style={{ backgroundColor: '#f4f7fe', minHeight: '100vh' }}>
             <div className="text-center mb-6 mt-2">
@@ -62,46 +46,27 @@ export default function OfficerLogin() {
 
             <div className="bg-white w-full max-w-sm rounded-xl shadow-sm overflow-hidden" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', maxWidth: '400px' }}>
                 <div className="p-6">
-                    <h2 className="text-xl font-bold text-center mb-6" style={{ color: 'var(--text-primary)' }}>{isForgotPassword ? 'Reset Password' : 'Officer / Admin Login'}</h2>
+                    <h2 className="text-xl font-bold text-center mb-6" style={{ color: 'var(--text-primary)' }}>Officer / Admin Login</h2>
                     {error && <p className="text-red-500 mb-4 text-sm font-bold text-center">{error}</p>}
-                    {successMsg && <p className="text-green-500 mb-4 text-sm font-bold text-center">{successMsg}</p>}
 
-                    {!isForgotPassword ? (
-                        <form onSubmit={handleLogin} className="flex flex-col gap-4 text-left border-b border-gray-200 pb-6 mb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                            <div>
-                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Officer Email</label>
-                                <div style={{ position: 'relative' }}>
-                                    <input type="email" className="input w-full" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required placeholder="your.email@civiccrux.com" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
-                                </div>
+                    <form onSubmit={handleLogin} className="flex flex-col gap-4 text-left border-b border-gray-200 pb-6 mb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <div>
+                            <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Officer Email</label>
+                            <div style={{ position: 'relative' }}>
+                                <input type="email" className="input w-full" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required placeholder="your.email@civiccrux.com" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Password</label>
-                                <div style={{ position: 'relative' }}>
-                                    <input type={showPassword ? "text" : "password"} className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required placeholder="Enter your password" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 2.5rem 0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
-                                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                                        {showPassword ? '🙈' : '👁️'}
-                                    </button>
-                                </div>
-                                <div className="text-right mt-1">
-                                    <button type="button" onClick={() => { setIsForgotPassword(true); setError(''); setSuccessMsg(''); }} className="text-xs font-bold hover:underline" style={{ color: 'var(--color-primary)' }}>Forgot Password?</button>
-                                </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Password</label>
+                            <div style={{ position: 'relative' }}>
+                                <input type={showPassword ? "text" : "password"} className="input w-full" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required placeholder="Enter your password" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 2.5rem 0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
                             </div>
-                            <button type="submit" className="btn w-full mt-2" style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', background: '#000000', color: 'white' }}>Sign In</button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleForgotSubmit} className="flex flex-col gap-4 text-left border-b border-gray-200 pb-6 mb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                            <div>
-                                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Officer Email</label>
-                                <div style={{ position: 'relative' }}>
-                                    <input type="email" className="input w-full" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required placeholder="your.email@civiccrux.com" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.6rem 0.75rem', width: '100%', fontSize: '0.875rem' }} />
-                                </div>
-                            </div>
-                            <button type="submit" className="btn w-full mt-2" style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', background: '#000000', color: 'white' }}>Send Reset Link</button>
-                            <div className="text-center mt-2">
-                                <button type="button" onClick={() => { setIsForgotPassword(false); setError(''); setSuccessMsg(''); }} className="text-xs font-bold hover:underline" style={{ color: 'var(--color-primary)' }}>Back to Login</button>
-                            </div>
-                        </form>
-                    )}
+                        </div>
+                        <button type="submit" className="btn w-full mt-2" style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', background: '#000000', color: 'white' }}>Sign In</button>
+                    </form>
                 </div>
 
                 <div className="py-4 text-center" style={{ backgroundColor: '#f9fafb' }}>
