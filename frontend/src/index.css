@@ -188,6 +188,12 @@ a {
   color: var(--color-error);
 }
 
+.badge-reopened {
+  background-color: #fff2e6;
+  color: #f26322;
+  border: 1px solid #f26322;
+}
+
 /* Form inputs */
 .select-input,
 .text-input {
