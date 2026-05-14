@@ -1,4 +1,6 @@
 const Complaint = require('../models/Complaint');
+const User = require('../models/User');
+
 
 const createComplaint = async (req, res) => {
     try {
@@ -33,7 +35,12 @@ const getMyComplaints = async (req, res) => {
 
 const getOfficerComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find({ ward: req.user.ward }).populate('reportedBy', 'name username');
+        const complaints = await Complaint.find({
+            $or: [
+                { ward: req.user.ward, reassignedOnce: false },
+                { assignedTo: req.user._id }
+            ]
+        }).populate('reportedBy', 'name username');
         res.json(complaints);
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -47,7 +54,7 @@ const getComplaintById = async (req, res) => {
 
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
-        if (req.user.role === 'officer' && complaint.ward !== req.user.ward) {
+        if (req.user.role === 'officer' && complaint.ward !== req.user.ward && complaint.assignedTo?.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to view complaints outside your ward' });
         }
         res.json(complaint);
@@ -61,7 +68,7 @@ const updateComplaintStatus = async (req, res) => {
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
         if (req.user.role === 'officer') {
-            if (complaint.ward !== req.user.ward) {
+            if (complaint.ward !== req.user.ward && complaint.assignedTo?.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ message: 'Not authorized to update complaints outside your ward' });
             }
             if (complaint.status === 'REOPENED' || complaint.status === 'ESCALATED') {
@@ -143,12 +150,22 @@ const reassignComplaint = async (req, res) => {
 
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
 
+        if (complaint.reassignedOnce) {
+            return res.status(400).json({ message: 'Complaint has already been reassigned once.' });
+        }
+
+        const previousOfficer = complaint.assignedTo ? await User.findById(complaint.assignedTo) : null;
+        const previousOfficerName = previousOfficer ? (previousOfficer.username || previousOfficer.name) : 'Unassigned';
+        const newOfficer = await User.findById(assignedTo);
+        const newOfficerName = newOfficer ? (newOfficer.username || newOfficer.name) : 'Unknown Officer';
+
         complaint.assignedTo = assignedTo;
-        if (ward) complaint.ward = ward;
+        complaint.reassignedOnce = true;
+        // Original ward context is kept so it maintains logical boundary association unless explicitly filtering to solely user.
 
         complaint.history.push({
             status: complaint.status,
-            note: `Reassigned to new officer in ${ward || complaint.ward}`,
+            note: `Reassigned from ${previousOfficerName} to ${newOfficerName} by Admin`,
             changedByRole: 'admin',
             changedBy: req.user._id
         });

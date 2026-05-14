@@ -21,6 +21,7 @@ const complaintSchema = mongoose.Schema(
         assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         resolutionImageUrl: { type: String },
         officerRemarks: { type: String },
+        reassignedOnce: { type: Boolean, default: false },
         history: [{
             status: { type: String },
             note: { type: String },

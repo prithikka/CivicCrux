@@ -223,27 +223,7 @@ export default function AdminDashboard() {
                                 {displayedIssues.length === 0 && <p className="text-gray text-center p-8">No issues found matching the criteria.</p>}
                                 {displayedIssues.map(issue => (
                                     <div key={issue._id} className="relative flex flex-col gap-2 mb-2">
-                                        <IssueCard issue={{ ...issue, id: issue._id }} isOfficer={false} />
-
-                                        {(issue.status === 'REOPENED' || issue.status === 'ESCALATED') && (
-                                            <div className="bg-orange-50 border border-orange-200 p-4 rounded flex items-center justify-between" style={{ backgroundColor: '#fffaf0', borderColor: '#ffd8a8' }}>
-                                                <div>
-                                                    <span className="text-sm font-bold text-error">Action Required:</span>
-                                                    <p className="text-xs text-gray">Issue is {issue.status}. Assign to an officer.</p>
-                                                </div>
-                                                <select
-                                                    className="select-input text-sm"
-                                                    style={{ minWidth: '200px' }}
-                                                    onChange={(e) => handleReassign(issue._id, e.target.value)}
-                                                    value=""
-                                                >
-                                                    <option value="" disabled>Select Officer / Ward...</option>
-                                                    {officers.map(o => (
-                                                        <option key={o._id} value={o._id}>{o.username || o.name} ({o.ward})</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
+                                        <IssueCard issue={{ ...issue, id: issue._id }} isOfficer={false} isAdmin={true} officers={officers} onReassign={handleReassign} />
                                     </div>
                                 ))}
                             </div>
