@@ -4,7 +4,10 @@ import { Link } from 'react-router-dom';
 export default function Home() {
     return (
         <div className="flex flex-col items-center justify-center p-8" style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #f4f7fe, #ffffff)' }}>
-            <h1 className="text-5xl font-bold mb-4 text-primary" style={{ letterSpacing: '-1px' }}>CivicCrux</h1>
+            <div className="flex items-center gap-4 mb-4">
+                <img src="/logo.png" alt="CivicCrux Logo" style={{ height: '80px', width: '80px', objectFit: 'contain' }} />
+                <h1 className="text-5xl font-bold text-primary" style={{ letterSpacing: '-1px', margin: 0 }}>CivicCrux</h1>
+            </div>
             <h2 className="text-2xl font-bold mb-2">Making Cities Better, Together</h2>
             <p className="text-gray mb-8 text-lg" style={{ marginTop: '0.5rem', marginBottom: '4rem', maxWidth: '600px', textAlign: 'center' }}>
                 The dedicated platform for reporting, tracking, and resolving local civic issues with complete operational transparency.

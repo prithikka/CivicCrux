@@ -6,7 +6,10 @@ export default function Header({ title, user, ward, onLogout, extraAction }) {
         <header className="header flex justify-between items-center" style={{ padding: '1.25rem 2rem', backgroundColor: 'white', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
             {/* Brand & Context */}
             <div className="flex items-center gap-6">
-                <Link to="/" className="text-primary font-bold text-2xl" style={{ letterSpacing: '-0.5px' }}>CivicCrux</Link>
+                <Link to="/" className="flex items-center gap-2 text-primary font-bold text-2xl" style={{ letterSpacing: '-0.5px', textDecoration: 'none' }}>
+                    <img src="/logo.png" alt="CivicCrux Logo" style={{ height: '40px', width: '40px', objectFit: 'contain' }} />
+                    CivicCrux
+                </Link>
                 <div style={{ paddingLeft: '1.5rem', borderLeft: '2px solid #e2e8f0' }}>
                     <h1 className="text-xl font-bold" style={{ margin: 0, color: 'var(--text-primary)' }}>{title}</h1>
                 </div>
