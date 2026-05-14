@@ -140,7 +140,7 @@ export default function AdminDashboard() {
                     <>
                         {activeTab === 'OVERVIEW' && (
                             <div className="flex flex-col gap-8">
-                                <div className="flex gap-4 w-full" style={{ flexWrap: 'wrap' }}>
+                                <div className="flex gap-6 w-full" style={{ flexWrap: 'wrap' }}>
                                     {[
                                         { label: 'Total Issues', count: issues.length, color: 'var(--text-primary)' },
                                         { label: 'Reported', count: issues.filter(i => i.status === 'REPORTED').length, color: '#f59e0b' },
@@ -148,9 +148,9 @@ export default function AdminDashboard() {
                                         { label: 'Resolved', count: issues.filter(i => i.status === 'RESOLVED').length, color: '#10b981' },
                                         { label: 'Escalated', count: issues.filter(i => i.status === 'ESCALATED').length, color: '#ef4444' }
                                     ].map(s => (
-                                        <div key={s.label} className="card" style={{ flex: 1, minWidth: '150px', padding: '1.5rem', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                                            <div className="text-3xl font-bold mb-2" style={{ color: s.color }}>{s.count}</div>
-                                            <div className="text-sm font-bold text-gray">{s.label}</div>
+                                        <div key={s.label} className="card" style={{ flex: 1, minWidth: '150px', padding: '1.75rem 1.5rem', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                            <div className="text-4xl font-bold mb-3" style={{ color: s.color }}>{s.count}</div>
+                                            <div className="text-sm font-bold text-gray uppercase tracking-wide">{s.label}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -286,10 +286,10 @@ export default function AdminDashboard() {
                             <div className="card" style={{ padding: '2rem' }}>
                                 <h3 className="text-2xl font-bold mb-6">Complaint Management</h3>
 
-                                <div className="flex flex-col gap-6 mb-10 p-6" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+                                <div className="flex flex-col gap-10 mb-10">
                                     {/* Issue Types subtabs */}
                                     <div>
-                                        <span className="text-sm font-bold text-gray block mb-3 uppercase tracking-wide">Status Filter</span>
+                                        <span className="text-sm font-bold text-gray block mb-4 uppercase tracking-wide">Status Filter</span>
                                         <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
                                             {['ALL', 'REPORTED', 'IN PROGRESS', 'RESOLVED', 'REOPENED', 'ESCALATED'].map(status => (
                                                 <button
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
                                                         color: filterStatus === status ? 'white' : 'var(--text-primary)',
                                                         border: filterStatus === status ? 'none' : '1px solid var(--color-border)',
                                                         boxShadow: filterStatus === status ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
-                                                        borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                        borderRadius: '999px', padding: '0.5rem 1.5rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
                                                     }}>
                                                     {status === 'ALL' ? 'All Issues' : (status === 'IN PROGRESS' ? 'In Progress' : status.charAt(0) + status.slice(1).toLowerCase() + (['REOPENED', 'ESCALATED'].includes(status) ? ' Issues' : ''))}
                                                 </button>
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
 
                                     {/* Ward subtabs */}
                                     <div>
-                                        <span className="text-sm font-bold text-gray block mb-3 uppercase tracking-wide">Ward Scope</span>
+                                        <span className="text-sm font-bold text-gray block mb-4 uppercase tracking-wide">Ward Scope</span>
                                         <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
                                             <button
                                                 onClick={() => setFilterWard('ALL')}
@@ -321,7 +321,7 @@ export default function AdminDashboard() {
                                                     color: filterWard === 'ALL' ? 'white' : 'var(--text-primary)',
                                                     border: filterWard === 'ALL' ? 'none' : '1px solid var(--color-border)',
                                                     boxShadow: filterWard === 'ALL' ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
-                                                    borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                    borderRadius: '999px', padding: '0.5rem 1.5rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
                                                 }}>
                                                 All Wards
                                             </button>
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
                                                         color: filterWard === w ? 'white' : 'var(--text-primary)',
                                                         border: filterWard === w ? 'none' : '1px solid var(--color-border)',
                                                         boxShadow: filterWard === w ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
-                                                        borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                        borderRadius: '999px', padding: '0.5rem 1.5rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
                                                     }}>
                                                     {w}
                                                 </button>
