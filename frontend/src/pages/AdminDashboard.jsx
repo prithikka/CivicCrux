@@ -10,6 +10,7 @@ export default function AdminDashboard() {
     const [error, setError] = useState(null);
     const [user, setUser] = useState({});
     const [activeTab, setActiveTab] = useState('OVERVIEW');
+    const [userSubTab, setUserSubTab] = useState('CITIZENS');
 
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [filterWard, setFilterWard] = useState('ALL');
@@ -84,8 +85,17 @@ export default function AdminDashboard() {
         }
     };
 
+    const officers = users.filter(u => u.role === 'officer');
+    const uniqueWards = [...new Set(issues.map(i => i.ward))];
+
     const wardMetrics = {};
     const officerMetrics = {};
+
+    officers.forEach(o => {
+        const name = o.name || o.username;
+        officerMetrics[name] = { total: 0, resolved: 0 };
+    });
+
     issues.forEach(issue => {
         if (!wardMetrics[issue.ward]) wardMetrics[issue.ward] = { total: 0, resolved: 0, pending: 0 };
         wardMetrics[issue.ward].total++;
@@ -100,11 +110,6 @@ export default function AdminDashboard() {
         }
     });
 
-    const officers = users.filter(u => u.role === 'officer');
-    const uniqueWards = [...new Set(issues.map(i => i.ward))];
-
-    const escalatedIssues = issues.filter(i => i.status?.toUpperCase() === 'ESCALATED');
-    const reopenedIssues = issues.filter(i => i.status?.toUpperCase() === 'REOPENED');
 
     return (
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
@@ -113,85 +118,131 @@ export default function AdminDashboard() {
             <div className="container">
                 {error && <div className="badge badge-escalated" style={{ marginBottom: '1rem', width: '100%', padding: '1rem' }}>{error}</div>}
 
-                <div className="flex gap-2" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-                    {['OVERVIEW', 'USERS', 'COMPLAINTS', 'ACTION REQUIRED'].map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className="btn"
-                            style={{
-                                background: activeTab === tab ? 'var(--color-primary)' : '#e2e8f0',
-                                color: activeTab === tab ? 'white' : 'var(--text-primary)',
-                                borderRadius: '999px', padding: '0.5rem 1.5rem', transition: 'all 0.2s', fontWeight: 'bold'
-                            }}>
-                            {tab}
-                            {tab === 'ACTION REQUIRED' && (escalatedIssues.length > 0 || reopenedIssues.length > 0) && (
-                                <span style={{ marginLeft: '8px', background: 'red', color: 'white', borderRadius: '50%', padding: '2px 8px', fontSize: '0.8rem' }}>
-                                    {escalatedIssues.length + reopenedIssues.length}
-                                </span>
-                            )}
-                        </button>
-                    ))}
+                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                    <div className="flex gap-2" style={{ flexWrap: 'wrap', justifyContent: 'center', background: 'white', padding: '0.5rem', borderRadius: '999px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'inline-flex' }}>
+                        {['OVERVIEW', 'USERS', 'COMPLAINTS'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className="btn"
+                                style={{
+                                    background: activeTab === tab ? '#eef2ff' : 'transparent',
+                                    color: activeTab === tab ? 'var(--color-primary)' : 'var(--text-secondary)',
+                                    borderRadius: '999px', padding: '0.75rem 2.5rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.95rem', border: 'none'
+                                }}>
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {loading ? <p>Loading data...</p> : (
                     <>
                         {activeTab === 'OVERVIEW' && (
-                            <div>
-                                <div className="flex gap-4" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-                                    <StatCard count={issues.length} label="Total Issues Network-Wide" />
-                                    <StatCard count={issues.filter(i => i.status === 'REPORTED').length} label="New / Reported" />
-                                    <StatCard count={issues.filter(i => i.status === 'IN PROGRESS').length} label="In Process" />
-                                    <StatCard count={issues.filter(i => i.status === 'RESOLVED').length} label="Successfully Resolved" />
+                            <div className="flex flex-col gap-8">
+                                <div className="flex gap-4 w-full" style={{ flexWrap: 'wrap' }}>
+                                    {[
+                                        { label: 'Total Issues', count: issues.length, color: 'var(--text-primary)' },
+                                        { label: 'Reported', count: issues.filter(i => i.status === 'REPORTED').length, color: '#f59e0b' },
+                                        { label: 'In Process', count: issues.filter(i => i.status === 'IN PROGRESS').length, color: '#3b82f6' },
+                                        { label: 'Resolved', count: issues.filter(i => i.status === 'RESOLVED').length, color: '#10b981' },
+                                        { label: 'Escalated', count: issues.filter(i => i.status === 'ESCALATED').length, color: '#ef4444' }
+                                    ].map(s => (
+                                        <div key={s.label} className="card" style={{ flex: 1, minWidth: '150px', padding: '1.5rem', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                            <div className="text-3xl font-bold mb-2" style={{ color: s.color }}>{s.count}</div>
+                                            <div className="text-sm font-bold text-gray">{s.label}</div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="flex gap-6 flex-wrap" style={{ marginBottom: '2rem' }}>
-                                    <div className="card" style={{ flex: 1, minWidth: '300px' }}>
-                                        <h3 className="text-lg font-bold mb-4">Ward Performance</h3>
-                                        <div className="flex flex-col gap-4">
-                                            {Object.keys(wardMetrics).map(ward => {
-                                                const m = wardMetrics[ward];
-                                                const percent = Math.round((m.resolved / m.total) * 100) || 0;
-                                                return (
-                                                    <div key={ward}>
-                                                        <div className="flex justify-between text-sm mb-1 font-bold">
-                                                            <span>{ward}</span>
-                                                            <span>{percent}% Resolved</span>
-                                                        </div>
-                                                        <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                                            <div style={{ width: `${percent}%`, height: '100%', background: 'var(--color-success)' }}></div>
-                                                        </div>
-                                                        <div className="text-xs text-gray mt-1">{m.pending} pending / {m.total} total</div>
-                                                    </div>
-                                                );
-                                            })}
-                                            {Object.keys(wardMetrics).length === 0 && <p className="text-xs text-gray">No ward data available.</p>}
-                                        </div>
+
+                                <div style={{ background: '#f8faff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', width: '100%' }}>
+                                    <div className="flex items-center gap-3 mb-8 text-xl font-bold" style={{ color: 'var(--text-primary)', marginLeft: '0.5rem' }}>
+                                        <span style={{ color: 'var(--color-primary)' }}>🎖️</span> Officer Performance
                                     </div>
-                                    <div className="card" style={{ flex: 1, minWidth: '300px' }}>
-                                        <h3 className="text-lg font-bold mb-4">Officer Efficiency</h3>
-                                        <div className="flex flex-col gap-4 text-sm">
-                                            {Object.keys(officerMetrics).map(officer => {
-                                                const m = officerMetrics[officer];
-                                                return (
-                                                    <div key={officer} className="flex justify-between items-center" style={{ paddingBottom: '0.5rem', borderBottom: '1px solid #f0f0f0' }}>
-                                                        <span className="font-bold">{officer}</span>
-                                                        <div className="flex gap-4">
-                                                            <span className="text-success font-bold">{m.resolved} Solved</span>
-                                                            <span className="text-gray">{m.total} Assigned</span>
+
+                                    <div className="flex flex-col gap-8 w-full">
+                                        {Object.keys(officerMetrics).map(officer => {
+                                            const m = officerMetrics[officer];
+                                            const resRate = m.total > 0 ? ((m.resolved / m.total) * 100).toFixed(1) : 0;
+                                            const scoreClass = resRate >= 80 ? 'var(--color-success)' : resRate >= 50 ? 'var(--color-warning)' : 'var(--color-error)';
+                                            const scoreText = resRate >= 80 ? 'Excellent' : resRate >= 50 ? 'Average' : 'Needs Focus';
+                                            const scoreBg = resRate >= 80 ? '#e6fcf5' : resRate >= 50 ? '#fff9e6' : '#ffeeeb';
+
+                                            return (
+                                                <div key={officer} className="flex gap-6 w-full" style={{ flexWrap: 'wrap' }}>
+                                                    <div className="card flex-1" style={{ minWidth: '300px', background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                                        <div className="text-sm font-bold mb-4 flex justify-between" style={{ color: 'var(--text-primary)' }}>
+                                                            <span>Performance Score: {officer}</span>
+                                                        </div>
+                                                        <div className="mb-4">
+                                                            <span className="text-5xl font-bold" style={{ color: 'var(--color-primary)' }}>{Math.round(resRate)}</span>
+                                                            <span className="text-xl font-bold text-gray"> /100</span>
+                                                        </div>
+                                                        <div className="badge mb-8 font-bold" style={{ background: scoreBg, color: scoreClass, padding: '0.4rem 1rem', borderRadius: '20px' }}>
+                                                            ⚡ {scoreText}
+                                                        </div>
+                                                        <div style={{ width: '100%', height: '12px', background: '#f1f5f9', borderRadius: '6px', overflow: 'hidden' }}>
+                                                            <div style={{ width: `${resRate}%`, height: '100%', background: 'var(--color-warning)' }}></div>
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
-                                            {Object.keys(officerMetrics).length === 0 && <p className="text-xs text-gray">No officer data available.</p>}
-                                        </div>
+
+                                                    <div className="card" style={{ flex: 2, minWidth: '400px', background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                                        <h4 className="font-bold mb-6 text-lg" style={{ color: 'var(--text-primary)' }}>Key Metrics</h4>
+
+                                                        <div className="flex flex-col gap-6 w-full">
+                                                            <div>
+                                                                <div className="flex justify-between text-sm font-bold mb-2">
+                                                                    <span className="text-gray">Resolution Rate</span>
+                                                                    <span style={{ color: 'var(--color-success)' }}>{resRate}%</span>
+                                                                </div>
+                                                                <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                    <div style={{ width: `${resRate}%`, height: '100%', background: 'var(--color-success)' }}></div>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex justify-between text-sm font-bold mb-1">
+                                                                    <span className="text-gray">Assignments Handled</span>
+                                                                    <span style={{ color: 'var(--color-primary)' }}>{m.total}</span>
+                                                                </div>
+                                                                <div className="text-xs text-gray">Total issues assigned to boundary and officer scope</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex justify-between text-sm font-bold mb-1">
+                                                                    <span className="text-gray">Resolved Issues</span>
+                                                                    <span style={{ color: 'var(--color-primary)' }}>{m.resolved}</span>
+                                                                </div>
+                                                                <div className="text-xs text-gray">Total issues definitively confirmed and closed</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {Object.keys(officerMetrics).length === 0 && <p className="text-gray p-4 text-center">No officer data available.</p>}
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {activeTab === 'USERS' && (
-                            <div className="card" style={{ overflowX: 'auto' }}>
-                                <h3 className="text-lg font-bold mb-4">User Management</h3>
+                            <div className="card" style={{ overflowX: 'auto', padding: '2rem' }}>
+                                <h3 className="text-2xl font-bold mb-6">User Management</h3>
+                                <div className="flex gap-3 mb-8" style={{ borderBottom: '2px solid var(--color-border)', paddingBottom: '1rem' }}>
+                                    {['CITIZENS', 'OFFICERS'].map(tab => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setUserSubTab(tab)}
+                                            className="btn"
+                                            style={{
+                                                background: userSubTab === tab ? 'var(--color-primary)' : 'transparent',
+                                                color: userSubTab === tab ? 'white' : 'var(--text-primary)',
+                                                border: userSubTab === tab ? 'none' : '1px solid var(--color-border)',
+                                                borderRadius: '8px', padding: '0.5rem 1.5rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.95rem'
+                                            }}>
+                                            {tab === 'CITIZENS' ? 'Citizens' : 'Ward Officers'}
+                                        </button>
+                                    ))}
+                                </div>
                                 <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
@@ -204,7 +255,7 @@ export default function AdminDashboard() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {users.map(u => (
+                                        {users.filter(u => userSubTab === 'CITIZENS' ? u.role === 'citizen' : u.role === 'officer').map(u => (
                                             <tr key={u._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                                                 <td style={{ padding: '0.75rem' }} className="font-bold">{u.name || u.username}</td>
                                                 <td style={{ padding: '0.75rem' }}>{u.email}</td>
@@ -232,76 +283,74 @@ export default function AdminDashboard() {
                         )}
 
                         {activeTab === 'COMPLAINTS' && (
-                            <div className="card">
-                                <h3 className="text-lg font-bold mb-4">Complaint Management</h3>
-                                <div className="flex gap-4 mb-4" style={{ flexWrap: 'wrap' }}>
-                                    <select className="select-input font-bold text-sm" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px' }}>
-                                        <option value="ALL">All Statuses</option>
-                                        <option value="REPORTED">REPORTED</option>
-                                        <option value="IN PROGRESS">IN PROGRESS</option>
-                                        <option value="RESOLVED">RESOLVED</option>
-                                        <option value="ESCALATED">ESCALATED</option>
-                                        <option value="REOPENED">REOPENED</option>
-                                    </select>
-                                    <select className="select-input font-bold text-sm" value={filterWard} onChange={e => setFilterWard(e.target.value)} style={{ padding: '0.5rem', borderRadius: '6px' }}>
-                                        <option value="ALL">All Wards</option>
-                                        {uniqueWards.map(w => <option key={w} value={w}>{w}</option>)}
-                                    </select>
+                            <div className="card" style={{ padding: '2rem' }}>
+                                <h3 className="text-2xl font-bold mb-6">Complaint Management</h3>
+
+                                <div className="flex flex-col gap-6 mb-10 p-6" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+                                    {/* Issue Types subtabs */}
+                                    <div>
+                                        <span className="text-sm font-bold text-gray block mb-3 uppercase tracking-wide">Status Filter</span>
+                                        <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
+                                            {['ALL', 'REPORTED', 'IN PROGRESS', 'RESOLVED', 'REOPENED', 'ESCALATED'].map(status => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => setFilterStatus(status)}
+                                                    className="btn"
+                                                    style={{
+                                                        background: filterStatus === status ? 'var(--color-primary)' : 'white',
+                                                        color: filterStatus === status ? 'white' : 'var(--text-primary)',
+                                                        border: filterStatus === status ? 'none' : '1px solid var(--color-border)',
+                                                        boxShadow: filterStatus === status ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
+                                                        borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                    }}>
+                                                    {status === 'ALL' ? 'All Issues' : (status === 'IN PROGRESS' ? 'In Progress' : status.charAt(0) + status.slice(1).toLowerCase() + (['REOPENED', 'ESCALATED'].includes(status) ? ' Issues' : ''))}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Ward subtabs */}
+                                    <div>
+                                        <span className="text-sm font-bold text-gray block mb-3 uppercase tracking-wide">Ward Scope</span>
+                                        <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
+                                            <button
+                                                onClick={() => setFilterWard('ALL')}
+                                                className="btn"
+                                                style={{
+                                                    background: filterWard === 'ALL' ? 'var(--color-primary)' : 'white',
+                                                    color: filterWard === 'ALL' ? 'white' : 'var(--text-primary)',
+                                                    border: filterWard === 'ALL' ? 'none' : '1px solid var(--color-border)',
+                                                    boxShadow: filterWard === 'ALL' ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
+                                                    borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                }}>
+                                                All Wards
+                                            </button>
+                                            {uniqueWards.map(w => (
+                                                <button
+                                                    key={w}
+                                                    onClick={() => setFilterWard(w)}
+                                                    className="btn"
+                                                    style={{
+                                                        background: filterWard === w ? 'var(--color-primary)' : 'white',
+                                                        color: filterWard === w ? 'white' : 'var(--text-primary)',
+                                                        border: filterWard === w ? 'none' : '1px solid var(--color-border)',
+                                                        boxShadow: filterWard === w ? '0 4px 6px -1px rgba(67, 24, 255, 0.2)' : 'none',
+                                                        borderRadius: '999px', padding: '0.4rem 1.25rem', transition: 'all 0.2s', fontWeight: 'bold', fontSize: '0.85rem'
+                                                    }}>
+                                                    {w}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col gap-4">
+
+                                <div className="flex flex-col gap-6">
+                                    {issues.filter(i => (filterStatus === 'ALL' || i.status === filterStatus) && (filterWard === 'ALL' || i.ward === filterWard)).length === 0 && (
+                                        <p className="text-gray text-center p-8">No issues found matching the selected criteria.</p>
+                                    )}
                                     {issues.filter(i => (filterStatus === 'ALL' || i.status === filterStatus) && (filterWard === 'ALL' || i.ward === filterWard)).map(issue => (
-                                        <IssueCard key={issue._id} issue={{ ...issue, id: issue._id }} isOfficer={false} />
+                                        <IssueCard key={issue._id} issue={{ ...issue, id: issue._id }} isOfficer={false} isAdmin={true} officers={officers} onReassign={handleReassign} />
                                     ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'ACTION REQUIRED' && (
-                            <div className="flex flex-col gap-8">
-                                <div className="card">
-                                    <h3 className="text-xl font-bold mb-4 text-error border-b pb-2">🚨 Escalated Issues</h3>
-                                    {escalatedIssues.length === 0 ? <p className="text-gray text-sm">No escalated issues currently.</p> : (
-                                        <div className="flex flex-col gap-4">
-                                            {escalatedIssues.map(issue => (
-                                                <div key={issue._id} className="flex flex-col p-4 border rounded" style={{ borderColor: 'var(--color-error)' }}>
-                                                    <IssueCard issue={{ ...issue, id: issue._id }} isOfficer={false} />
-                                                    <div className="mt-4 p-4 bg-gray-50 rounded flex items-center justify-between gap-4 flex-wrap">
-                                                        <span className="font-bold text-sm">Reassign to Officer:</span>
-                                                        <div className="flex gap-2">
-                                                            <select id={`reassign-${issue._id}`} className="select-input text-sm font-bold" style={{ padding: '0.5rem', borderRadius: '6px', minWidth: '200px' }}>
-                                                                <option value="">Select an Officer...</option>
-                                                                {officers.map(o => <option key={o._id} value={o._id}>{o.name || o.username} ({o.ward})</option>)}
-                                                            </select>
-                                                            <button onClick={() => handleReassign(issue._id, document.getElementById(`reassign-${issue._id}`).value)} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>Assign</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="card">
-                                    <h3 className="text-xl font-bold mb-4 border-b pb-2" style={{ color: '#f26322' }}>🔄 Reopened Issues</h3>
-                                    {reopenedIssues.length === 0 ? <p className="text-gray text-sm">No reopened issues currently.</p> : (
-                                        <div className="flex flex-col gap-4">
-                                            {reopenedIssues.map(issue => (
-                                                <div key={issue._id} className="flex flex-col p-4 border rounded" style={{ borderColor: '#f26322' }}>
-                                                    <IssueCard issue={{ ...issue, id: issue._id }} isOfficer={false} />
-                                                    <div className="mt-4 p-4 bg-gray-50 rounded flex items-center justify-between gap-4 flex-wrap">
-                                                        <span className="font-bold text-sm">Assign to Officer for Review:</span>
-                                                        <div className="flex gap-2">
-                                                            <select id={`reassign-${issue._id}`} className="select-input text-sm font-bold" style={{ padding: '0.5rem', borderRadius: '6px', minWidth: '200px' }}>
-                                                                <option value="">Select an Officer...</option>
-                                                                {officers.map(o => <option key={o._id} value={o._id}>{o.name || o.username} ({o.ward})</option>)}
-                                                            </select>
-                                                            <button onClick={() => handleReassign(issue._id, document.getElementById(`reassign-${issue._id}`).value)} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>Assign</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         )}

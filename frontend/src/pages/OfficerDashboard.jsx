@@ -42,8 +42,8 @@ export default function OfficerDashboard() {
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <Header
                 title="Officer Dashboard"
-                user={user.username ? user.username : (user.name || "Loading...")}
-                ward={user.ward || "..."}
+                user={user.username || user.name || (user.email ? user.email.split('@')[0] : "Officer")}
+                ward={user.ward || ""}
             />
 
             <div className="container">
