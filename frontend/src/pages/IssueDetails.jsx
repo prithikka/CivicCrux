@@ -112,7 +112,7 @@ export default function IssueDetails() {
         <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <Header
                 title={issue.title}
-                user={user ? (user.name || user.username) : "..."}
+                user={user ? (user.name || user.username || (user.email ? user.email.split('@')[0] : "Citizen")) : "..."}
                 extraAction={<button onClick={() => navigate(-1)} className="btn btn-outline" style={{ padding: '0.4rem 1rem' }}>← Back</button>}
             />
             <div className="text-xs text-gray" style={{ marginLeft: '2rem', marginTop: '-1.5rem', marginBottom: '2rem' }}>CivicCrux - Issue ID: {issue._id}</div>
