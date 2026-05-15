@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function IssueCard({ issue, isOfficer, isAdmin, officers, onReassign }) {
+    const navigate = useNavigate();
+
     const getBadgeClass = (status) => {
         switch (status?.toUpperCase()) {
             case 'IN PROGRESS': case 'IN PROCESS': return 'badge-in-process';
@@ -22,7 +24,7 @@ export default function IssueCard({ issue, isOfficer, isAdmin, officers, onReass
     const updateStatusLocal = async (id, newStatus) => {
         if (newStatus === 'RESOLVED') {
             alert('Resolution requires visual proof. Redirecting to Details page.');
-            window.location.href = `/issue/${id}`;
+            navigate(`/issue/${id}`);
             return;
         }
         try {
